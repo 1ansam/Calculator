@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -74,7 +73,7 @@ fun Calculator(){
                             Modifier
                                 .weight(if (it.first == "0") 2f else 1f)
                                 .aspectRatio(if (it.first == "0") 2f else 1f)
-                                .clip(if (it.first == "<-") Backspace() else CircleShape)
+                                .clip(if (it.first == "<-") backspace() else CircleShape)
                                 .background(it.second),it.first){
                             state = calculate(state, it.first)
                         }
@@ -169,8 +168,8 @@ fun CalculartorButton(modifier: Modifier, symble : String,onClick : ()->Unit){
 
 @Composable
 @Preview
-fun Backspace() = GenericShape{
-    size, layoutDirection ->
+fun backspace() = GenericShape{
+        size, _ ->
     moveTo(size.width / 3f , 0f)
     lineTo(0f,size .height / 2f)
     lineTo(size.width / 3f , size.height)
