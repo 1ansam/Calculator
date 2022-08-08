@@ -36,17 +36,17 @@ val buttons = arrayOf(
     arrayOf("7" to DarkGrey,"8" to DarkGrey,"9" to DarkGrey,"x" to Orange),
     arrayOf("4" to DarkGrey,"5" to DarkGrey,"6" to DarkGrey,"-" to Orange),
     arrayOf("1" to DarkGrey,"2" to DarkGrey,"3" to DarkGrey,"+" to Orange),
-    arrayOf("0" to DarkGrey,"," to DarkGrey,"=" to Orange),
+    arrayOf("0" to DarkGrey,"Backspace" to DarkGrey,"=" to Orange),
 )
 
-data class CalculartorState(val number1 : Int = 0, val number2 : Int = 0, val opt : String? = null)
+data class CalculatorState(val number1 : Long = 0, val number2 : Long = 0, val result : Long = 0, val opt : String? = null)
 
 @Preview(showSystemUi = true)
 @Composable
 fun Calculator(){
 
     var state by remember{
-        mutableStateOf(CalculartorState())
+        mutableStateOf(CalculatorState())
     }
     Column(Modifier.background(Background).padding(horizontal = 10.dp)){
         Box(
@@ -55,7 +55,7 @@ fun Calculator(){
                 .fillMaxWidth(),
             contentAlignment = Alignment.BottomEnd
             ){
-            Text(text = state.number2.toString(),
+            Text(text = state.result.toString(),
                 fontSize = 100.sp,
                 color = Color.White)
 
@@ -69,10 +69,10 @@ fun Calculator(){
                                 .weight(if (it.first == "0")2f else 1f)
                                 .aspectRatio(if (it.first == "0")2f else 1f)
 
-                                .background(it.second),it.first)
-                        {
+                                .background(it.second),it.first){
                             state = calculate(state, it.first)
                         }
+
                     }
                 }
             }
@@ -84,18 +84,43 @@ fun Calculator(){
     }
 }
 
-fun calculate(currentState: CalculartorState, input: String): CalculartorState {
+fun calculate(currentState: CalculatorState, input: String): CalculatorState {
 
     return when(input){
-        in (0..9).toString() -> currentState.copy(number2 = input.toInt(), number1 = currentState.number2)
+
+        in "0".."9" -> when(currentState.result){
+            0L -> when(currentState.opt){
+                null -> currentState.copy(number1 = input.toLong(), result = input.toLong())
+                else -> currentState.copy(number2 = input.toLong(), result = input.toLong())
+            }
+            else ->when(currentState.opt){
+                null -> currentState.copy(number1 = "${currentState.number1}$input".toLong(), result = "${currentState.number1}$input".toLong())
+                else -> currentState.copy(number2 = "${currentState.number2}$input".toLong(), result = "${currentState.number2}$input".toLong())
+            }
+        }
+
+
         in arrayOf("+","-","x","/") -> currentState.copy(opt = input)
+
         "="-> when(currentState.opt){
-            "+"->currentState.copy(number2 = currentState.number1 + currentState.number2, opt = null)
-            "-"->currentState.copy(number2 = currentState.number1 - currentState.number2, opt = null)
-            "x"->currentState.copy(number2 = currentState.number1 * currentState.number2, opt = null)
-            "/"->currentState.copy(number2 = currentState.number1 / currentState.number2, opt = null)
+            "+"->currentState.copy(result = currentState.number1 + currentState.number2, number1 = currentState.number1 + currentState.number2, opt = null)
+            "-"->currentState.copy(result = currentState.number1 - currentState.number2, number1 = currentState.number1 - currentState.number2, opt = null)
+            "x"->currentState.copy(result = currentState.number1 * currentState.number2, number1 = currentState.number1 * currentState.number2, opt = null)
+            "/"->currentState.copy(result = currentState.number1 / currentState.number2, number1 = currentState.number1 / currentState.number2, opt = null)
             else -> currentState
         }
+        "AC" -> currentState.copy(number1 = 0, number2 = 0, result = 0, opt = null)
+        "+/-" -> currentState.copy(result = currentState.result.inv()+1, opt = null)
+        "Backspace" -> when(currentState.result.toString().length){
+            1 -> currentState.copy(result = 0,
+                number2 = if(currentState.number2 == currentState.result) 0 else currentState.number2,
+                number1 = if (currentState.number1 == currentState.result) 0 else currentState.number1)
+            else -> currentState.copy(result = currentState.result.toString().substring(0,currentState.result.toString().length-1).toLong(),
+                number2 = if(currentState.number2 == currentState.result) currentState.result.toString().substring(0,currentState.result.toString().length-1).toLong() else currentState.number2,
+                number1 = if(currentState.number1 == currentState.result) currentState.result.toString().substring(0,currentState.result.toString().length-1).toLong() else currentState.number1
+                )
+        }
+
         else -> currentState
     }
 
@@ -104,11 +129,12 @@ fun calculate(currentState: CalculartorState, input: String): CalculartorState {
 
 
 @Composable
-fun CalculartorButton(modifier: Modifier, symble : String,onClick : ()->Unit = {}){
+fun CalculartorButton(modifier: Modifier, symble : String,onClick : ()->Unit){
     Box(modifier = Modifier
         .clip(CircleShape)
         .then(modifier)
-        .clickable { onClick }, contentAlignment = Alignment.Center){
+        .clickable { onClick.invoke() },
+        contentAlignment = Alignment.Center, ){
         Text(text = symble, fontSize = 40.sp,color = Color.White)
     }
 }
