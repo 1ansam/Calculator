@@ -38,7 +38,7 @@ val buttons = arrayOf(
     arrayOf("7" to DarkGrey,"8" to DarkGrey,"9" to DarkGrey,"x" to Orange),
     arrayOf("4" to DarkGrey,"5" to DarkGrey,"6" to DarkGrey,"-" to Orange),
     arrayOf("1" to DarkGrey,"2" to DarkGrey,"3" to DarkGrey,"+" to Orange),
-    arrayOf("0" to DarkGrey, "back" to DarkGrey,"=" to Orange),
+    arrayOf("0" to DarkGrey, "<-" to DarkGrey,"=" to Orange),
 )
 
 data class CalculatorState(val number1 : Long = 0, val number2 : Long = 0, val result : Long = 0, val opt : String? = null)
@@ -138,7 +138,7 @@ fun calculate(currentState: CalculatorState, input: String): CalculatorState {
             number2 = if(currentState.number2 == currentState.result) currentState.result.inv()+1 else currentState.number2,
             number1 = if (currentState.number1 == currentState.result) currentState.result.inv()+1 else currentState.number1,
             opt = null)
-        "back" -> when(currentState.result.toString().length){
+        "<-" -> when(currentState.result.toString().length){
             1 -> currentState.copy(result = 0,
                 number2 = if(currentState.number2 == currentState.result) 0 else currentState.number2,
                 number1 = if (currentState.number1 == currentState.result) 0 else currentState.number1)
